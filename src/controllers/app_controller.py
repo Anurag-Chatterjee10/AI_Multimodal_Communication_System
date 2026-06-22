@@ -10,6 +10,7 @@ It simply connects signals and delegates work.
 """
 
 from src.processing.frame_pipeline import FramePipeline
+from src.services.snapshot_manager import SnapshotManager
 
 
 class AppController:
@@ -47,6 +48,10 @@ class AppController:
 
         self.main_window.tool_bar.stop_action.triggered.connect(
             self._stop_camera
+        )
+
+        self.main_window.tool_bar.snapshot_action.triggered.connect(
+            self._take_snapshot
         )
 
         # ------------------------------------------------------
@@ -90,6 +95,27 @@ class AppController:
         """
 
         self.camera_service.stop()
+
+    def _take_snapshot(self):
+        """
+        Save the latest camera frame.
+        """
+
+        frame = FramePipeline.latest_frame()
+
+        if frame is None:
+
+            self.main_window.statusBar().showMessage(
+                "No frame available."
+            )
+
+            return
+
+        path = SnapshotManager.save_snapshot(frame)
+
+        self.main_window.statusBar().showMessage(
+            f"Snapshot saved : {path.name}"
+        )
 
     # ==========================================================
     # Camera Updates

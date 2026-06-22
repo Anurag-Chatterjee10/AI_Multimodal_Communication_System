@@ -2,17 +2,8 @@
 Frame Processing Pipeline
 -------------------------
 
-Processes frames before they are
+Processes camera frames before they are
 displayed in the GUI.
-
-Future stages will include:
-
-- Recording
-- Snapshot
-- YOLO
-- MediaPipe
-- OCR
-- Face Recognition
 """
 
 from src.processing.frame_converter import FrameConverter
@@ -20,41 +11,25 @@ from src.processing.frame_converter import FrameConverter
 
 class FramePipeline:
     """
-    Central processing pipeline for all
-    incoming camera frames.
+    Central frame processing pipeline.
     """
 
-    @staticmethod
-    def process(frame):
+    _latest_frame = None
+
+    @classmethod
+    def process(cls, frame):
         """
-        Process an OpenCV frame.
-
-        Parameters
-        ----------
-        frame
-            OpenCV frame.
-
-        Returns
-        -------
-        QPixmap
+        Process a camera frame.
         """
 
-        # ==========================================
-        # Future Processing
-        # ==========================================
-
-        #
-        # frame = recorder.process(frame)
-        #
-        # frame = snapshot.process(frame)
-        #
-        # frame = yolo.process(frame)
-        #
-        # frame = mediapipe.process(frame)
-        #
-        # frame = ocr.process(frame)
-        #
-
-        # ==========================================
+        cls._latest_frame = frame.copy()
 
         return FrameConverter.to_qpixmap(frame)
+
+    @classmethod
+    def latest_frame(cls):
+        """
+        Return the latest camera frame.
+        """
+
+        return cls._latest_frame
