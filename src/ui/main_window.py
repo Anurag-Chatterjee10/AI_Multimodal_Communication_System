@@ -120,6 +120,8 @@ class MainWindow(QMainWindow):
         Gracefully shutdown application.
         """
 
+        self.controller.recording_manager.shutdown()
+
         self.camera_service.stop()
 
         event.accept()

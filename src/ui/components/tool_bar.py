@@ -73,6 +73,11 @@ class AppToolBar(QToolBar):
 
         self.record_action = QAction("⏺ Record", self)
 
+        self.stop_record_action = QAction(
+            "⏹ Stop Recording",
+            self,
+        )
+
         # ------------------------------------------------------
         # Application
         # ------------------------------------------------------
@@ -125,6 +130,8 @@ class AppToolBar(QToolBar):
         self.addAction(self.snapshot_action)
 
         self.addAction(self.record_action)
+
+        self.addAction(self.stop_record_action)
 
         self.addSeparator()
 

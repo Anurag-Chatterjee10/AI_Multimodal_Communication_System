@@ -2,16 +2,8 @@
 Frame Processing Pipeline
 -------------------------
 
-Acts as the central frame dispatcher for the
-entire application.
-
-Every camera frame flows through this class.
-
-Responsibilities
-----------------
-• Store latest frame
-• Notify registered processors
-• Convert frame for GUI
+Processes camera frames before they are
+displayed in the GUI.
 """
 
 from src.processing.frame_converter import FrameConverter
@@ -23,75 +15,36 @@ class FramePipeline:
     """
 
     _latest_frame = None
-
-    _processors = []
-
-    # ==========================================================
-    # Registration
-    # ==========================================================
+    _recording_manager = None
 
     @classmethod
-    def register_processor(cls, processor):
+    def set_recording_manager(cls, recording_manager):
         """
-        Register a frame processor.
-
-        Every registered processor must implement
-
-            process(frame)
-
-        Parameters
-        ----------
-        processor :
-            Any object containing a process(frame)
-            method.
+        Register the RecordingManager.
         """
 
-        if processor not in cls._processors:
-            cls._processors.append(processor)
-
-    @classmethod
-    def unregister_processor(cls, processor):
-        """
-        Remove a processor.
-        """
-
-        if processor in cls._processors:
-            cls._processors.remove(processor)
-
-    # ==========================================================
-    # Main Pipeline
-    # ==========================================================
+        cls._recording_manager = recording_manager
 
     @classmethod
     def process(cls, frame):
         """
-        Process one camera frame.
+        Process a camera frame.
         """
 
         cls._latest_frame = frame.copy()
 
-        #
-        # Notify every processor
-        #
-
-        for processor in cls._processors:
-
-            processor.process(frame)
-
-        #
-        # GUI Conversion
-        #
+        if (
+            cls._recording_manager is not None
+            and cls._recording_manager.is_recording
+        ):
+            cls._recording_manager.write(frame)
 
         return FrameConverter.to_qpixmap(frame)
-
-    # ==========================================================
-    # Latest Frame
-    # ==========================================================
 
     @classmethod
     def latest_frame(cls):
         """
-        Return latest frame.
+        Return the latest frame.
         """
 
         return cls._latest_frame

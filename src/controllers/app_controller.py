@@ -11,6 +11,7 @@ It simply connects signals and delegates work.
 
 from src.processing.frame_pipeline import FramePipeline
 from src.services.snapshot_manager import SnapshotManager
+from src.services.recording.recording_manager import RecordingManager
 
 
 class AppController:
@@ -25,7 +26,14 @@ class AppController:
         camera_service,
     ):
         self.main_window = main_window
+
         self.camera_service = camera_service
+
+        self.recording_manager = RecordingManager()
+
+        FramePipeline.set_recording_manager(
+            self.recording_manager
+        )
 
         self._connect_signals()
 
@@ -52,6 +60,14 @@ class AppController:
 
         self.main_window.tool_bar.snapshot_action.triggered.connect(
             self._take_snapshot
+        )
+
+        self.main_window.tool_bar.record_action.triggered.connect(
+            self._start_recording
+        )
+
+        self.main_window.tool_bar.stop_record_action.triggered.connect(
+            self._stop_recording
         )
 
         # ------------------------------------------------------
@@ -94,6 +110,9 @@ class AppController:
         Stop the camera.
         """
 
+        if self.recording_manager.is_recording:
+            self.recording_manager.stop()
+
         self.camera_service.stop()
 
     def _take_snapshot(self):
@@ -115,6 +134,68 @@ class AppController:
 
         self.main_window.statusBar().showMessage(
             f"Snapshot saved : {path.name}"
+        )
+    
+    def _start_recording(self):
+        """
+        Start video recording.
+        """
+
+        if self.recording_manager.is_recording:
+
+            self.main_window.statusBar().showMessage(
+                "Recording already in progress."
+            )
+
+            return
+
+        frame = FramePipeline.latest_frame()
+
+        if frame is None:
+
+            self.main_window.statusBar().showMessage(
+                "No frame available."
+            )
+
+            return
+
+        if self.recording_manager.start(frame):
+
+            self.main_window.statusBar().showMessage(
+                "Recording Started"
+            )
+
+            self.main_window.workspace.camera_panel.set_status(
+                "🔴 REC"
+            )
+
+        else:
+
+            self.main_window.statusBar().showMessage(
+                "Failed to start recording."
+            )
+
+    def _stop_recording(self):
+        """
+        Stop video recording.
+        """
+
+        if not self.recording_manager.is_recording:
+
+            self.main_window.statusBar().showMessage(
+                "Recording is not active."
+            )
+
+            return
+
+        self.recording_manager.stop()
+
+        self.main_window.statusBar().showMessage(
+            "Recording Stopped"
+        )
+
+        self.main_window.workspace.camera_panel.set_status(
+            "🟢 LIVE"
         )
 
     # ==========================================================
@@ -154,6 +235,9 @@ class AppController:
         Camera stopped.
         """
 
+        if self.recording_manager.is_recording:
+            self.recording_manager.stop()
+
         self.main_window.statusBar().showMessage(
             "Camera Stopped"
         )
@@ -166,6 +250,9 @@ class AppController:
         """
         Camera error occurred.
         """
+
+        if self.recording_manager.is_recording:
+            self.recording_manager.stop()
 
         self.main_window.statusBar().showMessage(
             message
@@ -184,6 +271,14 @@ class AppController:
             f"FPS : {fps:.1f}"
         )
 
+        if self.recording_manager.is_recording:
+
+            status = f"🔴 REC | FPS : {fps:.1f}"
+
+        else:
+
+            status = f"🟢 LIVE | FPS : {fps:.1f}"
+
         self.main_window.workspace.camera_panel.set_status(
-            f"🟢 LIVE | FPS : {fps:.1f}"
+            status
         )

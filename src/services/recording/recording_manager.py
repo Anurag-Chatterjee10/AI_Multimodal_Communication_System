@@ -1,88 +1,243 @@
 """
 Recording Manager
 -----------------
-Handles video recording using OpenCV VideoWriter.
-"""
 
-from __future__ import annotations
+Handles video recording for the application.
+
+Responsibilities
+----------------
+• Start recording
+• Stop recording
+• Receive camera frames
+• Save MP4 videos
+"""
 
 from pathlib import Path
 from datetime import datetime
+from typing import Optional
 
 import cv2
+import numpy as np
+
+from src.core.logger import logger
 
 
 class RecordingManager:
     """
-    Handles video recording.
+    Handles application video recording.
+
+    This class records frames received from the
+    FramePipeline and saves them as MP4 videos.
     """
 
-    def __init__(self, output_directory: str = "exports/videos") -> None:
-        self.output_directory = Path(output_directory)
-        self.output_directory.mkdir(parents=True, exist_ok=True)
+    def __init__(
+        self,
+        output_directory: str = "exports/videos",
+    ) -> None:
+        """
+        Initialize the Recording Manager.
 
-        self._writer = None
-        self._is_recording = False
-        self._output_path = None
+        Args:
+            output_directory:
+                Directory where recordings are stored.
+        """
+
+        logger.info("Initializing Recording Manager")
+
+        self._writer: Optional[cv2.VideoWriter] = None
+
+        self._recording: bool = False
+
+        self._output_path: Optional[Path] = None
+
+        self._start_time: Optional[datetime] = None
+
+        self._fps: float = 30.0
+
+        self._output_directory = Path(output_directory)
+
+        self._output_directory.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+    # ======================================================
+    # Properties
+    # ======================================================
 
     @property
     def is_recording(self) -> bool:
-        return self._is_recording
+        """
+        Returns recording status.
+        """
+
+        return self._recording
 
     @property
-    def output_path(self):
+    def output_path(self) -> Optional[Path]:
+        """
+        Returns current output path.
+        """
+
         return self._output_path
 
-    def start_recording(
+    @property
+    def start_time(self) -> Optional[datetime]:
+        """
+        Returns recording start time.
+        """
+
+        return self._start_time
+
+    # ======================================================
+    # Recording
+    # ======================================================
+
+    def start(
         self,
-        frame_width: int,
-        frame_height: int,
-        fps: float,
+        frame: np.ndarray,
+        fps: float = 30.0,
     ) -> bool:
+        """
+        Start recording.
 
-        if self._is_recording:
+        Args:
+            frame:
+                First camera frame.
+
+            fps:
+                Recording frame rate.
+
+        Returns:
+            True if recording started successfully,
+            otherwise False.
+        """
+
+        if self._recording:
+
+            logger.warning(
+                "Recording already in progress."
+            )
+
             return False
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        try:
 
-        self._output_path = (
-            self.output_directory /
-            f"recording_{timestamp}.mp4"
-        )
+            height, width = frame.shape[:2]
 
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            self._fps = fps
 
-        self._writer = cv2.VideoWriter(
-            str(self._output_path),
-            fourcc,
-            fps,
-            (frame_width, frame_height),
-        )
+            timestamp = datetime.now().strftime(
+                "%Y%m%d_%H%M%S"
+            )
 
-        if not self._writer.isOpened():
+            self._output_path = (
+                self._output_directory
+                / f"recording_{timestamp}.mp4"
+            )
+
+            fourcc = cv2.VideoWriter_fourcc(
+                *"mp4v"
+            )
+
+            self._writer = cv2.VideoWriter(
+                str(self._output_path),
+                fourcc,
+                self._fps,
+                (width, height),
+            )
+
+            if not self._writer.isOpened():
+
+                logger.error(
+                    "Unable to create VideoWriter."
+                )
+
+                self._writer = None
+
+                return False
+
+            self._recording = True
+
+            self._start_time = datetime.now()
+
+            logger.info(
+                f"Recording started: "
+                f"{self._output_path.name}"
+            )
+
+            return True
+
+        except Exception as error:
+
+            logger.exception(
+                f"Recording start failed: {error}"
+            )
+
             self._writer = None
+            self._recording = False
+            self._output_path = None
+            self._start_time = None
+
             return False
 
-        self._is_recording = True
-        return True
+    def write(
+        self,
+        frame: np.ndarray,
+    ) -> None:
+        """
+        Write one frame to the video.
 
-    def write_frame(self, frame) -> None:
+        Args:
+            frame:
+                Camera frame.
+        """
 
-        if not self._is_recording:
-            return
-
-        if self._writer is None:
+        if (
+            not self._recording
+            or self._writer is None
+            or frame is None
+        ):
             return
 
         self._writer.write(frame)
 
-    def stop_recording(self) -> None:
+    def stop(self) -> None:
+        """
+        Stop recording.
+        """
+
+        if not self._recording:
+
+            logger.warning(
+                "No active recording to stop."
+            )
+
+            return
+
+        logger.info(
+            "Stopping Recording"
+        )
 
         if self._writer is not None:
+
             self._writer.release()
 
         self._writer = None
-        self._is_recording = False
+
+        self._recording = False
+
+        self._output_path = None
+
+        self._start_time = None
 
     def shutdown(self) -> None:
-        self.stop_recording()
+        """
+        Shutdown the Recording Manager.
+        """
+
+        logger.info(
+            "Shutting down Recording Manager"
+        )
+
+        self.stop()
