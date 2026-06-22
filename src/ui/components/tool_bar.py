@@ -7,8 +7,8 @@ Defines the application's main toolbar.
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QToolBar
 
-#from core.logger import logger
 from src.core.logger import logger
+
 
 class AppToolBar(QToolBar):
     """
@@ -32,27 +32,65 @@ class AppToolBar(QToolBar):
 
         logger.info("Tool Bar Created Successfully")
 
+    # ==========================================================
+    # Actions
+    # ==========================================================
+
     def _create_actions(self):
         """
         Create toolbar actions.
         """
 
+        # ------------------------------------------------------
+        # Device Controls
+        # ------------------------------------------------------
+
         self.camera_action = QAction("📷 Camera", self)
 
         self.microphone_action = QAction("🎤 Mic", self)
+
+        # ------------------------------------------------------
+        # File Operations
+        # ------------------------------------------------------
 
         self.open_action = QAction("📂 Open", self)
 
         self.save_action = QAction("💾 Save", self)
 
+        # ------------------------------------------------------
+        # Camera Controls
+        # ------------------------------------------------------
+
         self.start_action = QAction("▶ Start", self)
 
         self.stop_action = QAction("⏹ Stop", self)
+
+        # ------------------------------------------------------
+        # Multimedia
+        # ------------------------------------------------------
+
+        self.snapshot_action = QAction("📸 Snapshot", self)
+
+        self.record_action = QAction("⏺ Record", self)
+
+        # ------------------------------------------------------
+        # Application
+        # ------------------------------------------------------
+
+        self.settings_action = QAction("⚙ Settings", self)
+
+    # ==========================================================
+    # Toolbar Layout
+    # ==========================================================
 
     def _create_toolbar(self):
         """
         Populate the toolbar.
         """
+
+        # ------------------------------------------------------
+        # Devices
+        # ------------------------------------------------------
 
         self.addAction(self.camera_action)
 
@@ -60,15 +98,45 @@ class AppToolBar(QToolBar):
 
         self.addSeparator()
 
+        # ------------------------------------------------------
+        # Files
+        # ------------------------------------------------------
+
         self.addAction(self.open_action)
 
         self.addAction(self.save_action)
 
         self.addSeparator()
 
+        # ------------------------------------------------------
+        # Camera
+        # ------------------------------------------------------
+
         self.addAction(self.start_action)
 
         self.addAction(self.stop_action)
+
+        self.addSeparator()
+
+        # ------------------------------------------------------
+        # Multimedia
+        # ------------------------------------------------------
+
+        self.addAction(self.snapshot_action)
+
+        self.addAction(self.record_action)
+
+        self.addSeparator()
+
+        # ------------------------------------------------------
+        # Application
+        # ------------------------------------------------------
+
+        self.addAction(self.settings_action)
+
+    # ==========================================================
+    # Signal Connections
+    # ==========================================================
 
     def _connect_signals(self):
         """

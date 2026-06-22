@@ -9,7 +9,7 @@ The controller contains no business logic.
 It simply connects signals and delegates work.
 """
 
-from src.processing.frame_converter import FrameConverter
+from src.processing.frame_pipeline import FramePipeline
 
 
 class AppController:
@@ -97,10 +97,10 @@ class AppController:
 
     def _update_camera_frame(self, frame):
         """
-        Display the latest camera frame.
+        Display the processed frame.
         """
 
-        pixmap = FrameConverter.to_qpixmap(frame)
+        pixmap = FramePipeline.process(frame)
 
         self.main_window.workspace.camera_panel.set_frame(
             pixmap
@@ -119,6 +119,10 @@ class AppController:
             "Camera Started"
         )
 
+        self.main_window.workspace.camera_panel.set_status(
+            "🟢 LIVE"
+        )
+
     def _camera_stopped(self):
         """
         Camera stopped.
@@ -126,6 +130,10 @@ class AppController:
 
         self.main_window.statusBar().showMessage(
             "Camera Stopped"
+        )
+
+        self.main_window.workspace.camera_panel.set_status(
+            "🔴 OFFLINE"
         )
 
     def _camera_error(self, message):
@@ -137,11 +145,19 @@ class AppController:
             message
         )
 
+        self.main_window.workspace.camera_panel.set_status(
+            "❌ CAMERA ERROR"
+        )
+
     def _update_fps(self, fps):
         """
-        Update FPS in the status bar.
+        Update camera FPS.
         """
 
         self.main_window.statusBar().showMessage(
             f"FPS : {fps:.1f}"
+        )
+
+        self.main_window.workspace.camera_panel.set_status(
+            f"🟢 LIVE | FPS : {fps:.1f}"
         )

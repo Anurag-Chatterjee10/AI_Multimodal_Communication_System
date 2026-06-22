@@ -15,7 +15,7 @@ class CameraPanelWidget(QFrame):
     Camera panel.
 
     Responsible ONLY for displaying
-    camera frames.
+    camera frames and camera status.
     """
 
     def __init__(self, parent=None):
@@ -39,6 +39,10 @@ class CameraPanelWidget(QFrame):
             "No Camera Connected"
         )
 
+        self.status_label = QLabel(
+            "🔴 OFFLINE"
+        )
+
     def _create_layout(self):
 
         layout = QVBoxLayout(self)
@@ -58,6 +62,8 @@ class CameraPanelWidget(QFrame):
             self.preview_label,
             1,
         )
+
+        layout.addWidget(self.status_label)
 
     def _apply_styles(self):
 
@@ -81,12 +87,28 @@ class CameraPanelWidget(QFrame):
             Qt.AlignCenter
         )
 
+        status_font = QFont()
+
+        status_font.setPointSize(10)
+
+        status_font.setBold(True)
+
+        self.status_label.setFont(status_font)
+
+        self.status_label.setAlignment(
+            Qt.AlignLeft
+        )
+
         self.preview_label.setObjectName(
             "cameraPlaceholder"
         )
 
         self.title_label.setObjectName(
             "cameraTitle"
+        )
+
+        self.status_label.setObjectName(
+            "cameraStatus"
         )
 
     # =======================================================
@@ -107,3 +129,10 @@ class CameraPanelWidget(QFrame):
         self.preview_label.setPixmap(
             scaled
         )
+
+    def set_status(self, text: str):
+        """
+        Update camera status.
+        """
+
+        self.status_label.setText(text)
