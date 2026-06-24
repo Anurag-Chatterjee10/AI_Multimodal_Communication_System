@@ -30,6 +30,12 @@ class AppToolBar(QToolBar):
 
         self._connect_signals()
 
+        # ------------------------------------------------------
+        # Initial Toolbar State
+        # ------------------------------------------------------
+
+        self.set_recording_state(False)
+
         logger.info("Tool Bar Created Successfully")
 
     # ==========================================================
@@ -140,6 +146,23 @@ class AppToolBar(QToolBar):
         # ------------------------------------------------------
 
         self.addAction(self.settings_action)
+
+    # ==========================================================
+    # Recording State
+    # ==========================================================
+
+    def set_recording_state(self, recording: bool) -> None:
+        """
+        Update recording button states.
+
+        Args:
+            recording:
+                True if recording is active.
+        """
+
+        self.record_action.setEnabled(not recording)
+
+        self.stop_record_action.setEnabled(recording)
 
     # ==========================================================
     # Signal Connections

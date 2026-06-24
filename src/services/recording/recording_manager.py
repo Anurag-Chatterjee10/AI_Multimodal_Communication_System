@@ -19,16 +19,21 @@ from typing import Optional
 import cv2
 import numpy as np
 
+from PySide6.QtCore import QObject, Signal
+
 from src.core.logger import logger
 
 
-class RecordingManager:
+class RecordingManager(QObject):
     """
     Handles application video recording.
 
     This class records frames received from the
     FramePipeline and saves them as MP4 videos.
     """
+
+    recording_started = Signal()
+    recording_stopped = Signal()
 
     def __init__(
         self,
@@ -41,6 +46,8 @@ class RecordingManager:
             output_directory:
                 Directory where recordings are stored.
         """
+
+        super().__init__()
 
         logger.info("Initializing Recording Manager")
 
@@ -100,17 +107,6 @@ class RecordingManager:
     ) -> bool:
         """
         Start recording.
-
-        Args:
-            frame:
-                First camera frame.
-
-            fps:
-                Recording frame rate.
-
-        Returns:
-            True if recording started successfully,
-            otherwise False.
         """
 
         if self._recording:
@@ -166,6 +162,8 @@ class RecordingManager:
                 f"{self._output_path.name}"
             )
 
+            self.recording_started.emit()
+
             return True
 
         except Exception as error:
@@ -187,10 +185,6 @@ class RecordingManager:
     ) -> None:
         """
         Write one frame to the video.
-
-        Args:
-            frame:
-                Camera frame.
         """
 
         if (
@@ -230,6 +224,8 @@ class RecordingManager:
         self._output_path = None
 
         self._start_time = None
+
+        self.recording_stopped.emit()
 
     def shutdown(self) -> None:
         """

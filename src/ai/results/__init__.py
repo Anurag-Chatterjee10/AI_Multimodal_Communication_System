@@ -1,0 +1,3 @@
+"""
+AI result object definitions.
+"""

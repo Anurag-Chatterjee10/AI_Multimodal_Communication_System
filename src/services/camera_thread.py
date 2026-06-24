@@ -31,7 +31,11 @@ class CameraThread(QThread):
 
     camera_error = Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(
+        self,
+        camera_index: int = 0,
+        parent=None,
+    ):
         super().__init__(parent)
 
         logger.info("Initializing Camera Thread")
@@ -40,30 +44,76 @@ class CameraThread(QThread):
 
         self._camera = None
 
+        self._camera_index = camera_index
+
     @property
     def is_running(self):
+        """
+        Returns whether the thread is running.
+        """
+
         return self._running
+
+    @property
+    def camera_index(self):
+        """
+        Returns the current camera index.
+        """
+
+        return self._camera_index
+
+    def set_camera(self, camera_index: int):
+        """
+        Set the camera index.
+
+        This method should only be called
+        while the thread is not running.
+        """
+
+        if self._running:
+
+            logger.warning(
+                "Cannot change camera while running."
+            )
+
+            return
+
+        self._camera_index = camera_index
+
+        logger.info(
+            f"Camera index set to {camera_index}"
+        )
 
     def run(self):
         """
         Thread entry point.
         """
 
-        logger.info("Opening Camera")
+        logger.info(
+            f"Opening Camera {self._camera_index}"
+        )
 
-        self._camera = cv2.VideoCapture(0)
+        self._camera = cv2.VideoCapture(
+            self._camera_index
+        )
 
         if not self._camera.isOpened():
 
-            logger.error("Unable to open camera")
+            logger.error(
+                f"Unable to open camera "
+                f"{self._camera_index}"
+            )
 
             self.camera_error.emit(
-                "Unable to open camera."
+                f"Unable to open camera "
+                f"{self._camera_index}."
             )
 
             return
 
-        logger.info("Camera Opened")
+        logger.info(
+            f"Camera {self._camera_index} Opened"
+        )
 
         self._running = True
 
@@ -87,7 +137,10 @@ class CameraThread(QThread):
 
             current_time = time.time()
 
-            fps = 1 / (current_time - previous_time)
+            fps = 1 / max(
+                current_time - previous_time,
+                0.000001,
+            )
 
             previous_time = current_time
 

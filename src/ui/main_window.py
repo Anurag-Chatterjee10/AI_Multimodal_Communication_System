@@ -17,6 +17,7 @@ from src.config import constants
 from src.core.logger import logger
 
 from src.services.camera_service import CameraService
+from src.services.video.video_service import VideoService
 from src.controllers.app_controller import AppController
 
 from src.ui.theme import DARK_THEME
@@ -27,7 +28,9 @@ from src.ui.components.status_bar import AppStatusBar
 
 from src.ui.widgets.header_widget import HeaderWidget
 from src.ui.widgets.workspace import Workspace
-
+from src.ai.managers.model_manager import ModelManager
+from src.ai.models.dummy_model import DummyModel
+from src.ai.workers.ai_worker import AIWorker
 
 class MainWindow(QMainWindow):
     """
@@ -48,6 +51,9 @@ class MainWindow(QMainWindow):
         self.controller = AppController(
             self,
             self.camera_service,
+            self.video_service,
+            self.model_manager,
+            self.ai_worker,
         )
 
         logger.info("Main Window Created Successfully")
@@ -86,7 +92,33 @@ class MainWindow(QMainWindow):
 
         self.workspace = Workspace()
 
+        # ------------------------------------------------------
+        # Services
+        # ------------------------------------------------------
+
         self.camera_service = CameraService()
+
+        self.video_service = VideoService()
+
+        # ------------------------------------------------------
+        # AI Components
+        # ------------------------------------------------------
+
+        self.model_manager = ModelManager()
+
+        self.dummy_model = DummyModel()
+
+        self.model_manager.register_model(
+            self.dummy_model
+        )
+
+        self.model_manager.load_model("Dummy")
+
+        self.ai_worker = AIWorker(
+            self.model_manager
+        )
+
+        self.ai_worker.set_model("Dummy")
 
     def _create_layout(self):
         """
@@ -123,5 +155,11 @@ class MainWindow(QMainWindow):
         self.controller.recording_manager.shutdown()
 
         self.camera_service.stop()
+
+        self.video_service.stop()
+
+        self.ai_worker.stop()
+
+        self.model_manager.shutdown()
 
         event.accept()

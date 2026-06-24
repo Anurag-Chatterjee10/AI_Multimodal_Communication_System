@@ -1,0 +1,3 @@
+"""
+Overlay rendering components.
+"""
