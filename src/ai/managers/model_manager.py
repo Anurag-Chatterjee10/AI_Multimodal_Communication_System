@@ -19,6 +19,7 @@ Central manager responsible for controlling AI models.
 
 from typing import List, Optional
 from src.ai.models.dummy_model import DummyModel
+from src.ai.models.yolo_model import YOLOModel
 from src.ai.managers.model_registry import ModelRegistry
 from src.ai.models.base_model import BaseModel
 
@@ -44,6 +45,9 @@ class ModelManager:
             DummyModel()
         )
 
+        self.register_model(
+            YOLOModel()
+        )
     def register_model(self, model: BaseModel) -> None:
         """
         Register an AI model.
