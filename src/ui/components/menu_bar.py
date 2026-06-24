@@ -6,7 +6,7 @@ Defines the application's main menu bar.
 
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenuBar
-
+from src.ai.managers.model_manager import ModelManager
 #from core.logger import logger
 from src.core.logger import logger
 
@@ -15,9 +15,16 @@ class AppMenuBar(QMenuBar):
     Main application menu bar.
     """
 
-    def __init__(self, parent=None):
+    def __init__( 
+        self,
+        model_manager,
+        parent=None,
+    ):
         super().__init__(parent)
+        self._model_manager = ModelManager()
 
+        self._model_actions = {}
+        
         logger.info("Creating Menu Bar")
 
         self._create_actions()
@@ -83,6 +90,22 @@ class AppMenuBar(QMenuBar):
         tools_menu.addAction(self.preferences_action)
 
         models_menu = self.addMenu("Models")
+
+        for model_name in self._model_manager.list_models():
+
+            action = QAction(model_name, self)
+
+            action.triggered.connect(
+                lambda checked=False, name=model_name:
+                self._load_model(name)
+            )
+
+            self._model_actions[model_name] = action
+
+            models_menu.addAction(action)
+
+        models_menu.addSeparator()
+
         models_menu.addAction(self.manage_models_action)
 
         settings_menu = self.addMenu("Settings")
@@ -108,3 +131,48 @@ class AppMenuBar(QMenuBar):
             self.exit_action.triggered.connect(
                 self.parent().close
             )
+
+    def _load_model(self, model_name: str):
+        """
+        Load the selected AI model.
+        """
+
+        try:
+
+            active_model = self._model_manager.active_model
+
+            if (
+                active_model is not None
+                and active_model.model_name != model_name
+            ):
+                self._model_manager.unload_model(
+                    active_model.model_name
+                )
+
+            self._model_manager.load_model(model_name)
+
+            if self.parent():
+
+                self.parent().ai_worker.set_model(model_name)
+
+                self.parent().header.set_model_status(
+                    model_name
+                )
+
+                self.parent().status_bar.showMessage(
+                    f"AI Model Loaded : {model_name}"
+                )
+
+            logger.info(
+                f"Loaded AI Model : {model_name}"
+            )
+
+        except Exception as e:
+
+            logger.error(str(e))
+
+            if self.parent():
+
+                self.parent().status_bar.showMessage(
+                    str(e)
+                )

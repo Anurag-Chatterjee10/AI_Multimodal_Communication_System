@@ -18,7 +18,7 @@ Central manager responsible for controlling AI models.
 """
 
 from typing import List, Optional
-
+from src.ai.models.dummy_model import DummyModel
 from src.ai.managers.model_registry import ModelRegistry
 from src.ai.models.base_model import BaseModel
 
@@ -30,6 +30,19 @@ class ModelManager:
 
     def __init__(self):
         self._registry = ModelRegistry()
+
+        self._register_builtin_models()
+
+        self._active_model: BaseModel | None = None
+    
+    def _register_builtin_models(self) -> None:
+        """
+        Register all built-in AI models.
+        """
+
+        self.register_model(
+            DummyModel()
+        )
 
     def register_model(self, model: BaseModel) -> None:
         """
@@ -44,28 +57,32 @@ class ModelManager:
         self._registry.unregister_model(model_name)
 
     def load_model(self, model_name: str) -> None:
-        """
-        Load a registered model.
-        """
-        model = self._registry.get_model(model_name)
+            """
+            Load a registered model.
+            """
+            model = self._registry.get_model(model_name)
 
-        if model is None:
-            raise ValueError(f"Model '{model_name}' not found.")
+            if model is None:
+                raise ValueError(f"Model '{model_name}' not found.")
 
-        if not model.is_loaded:
-            model.load()
+            if not model.is_loaded:
+                model.load()
 
+            self._active_model = model
     def unload_model(self, model_name: str) -> None:
-        """
-        Unload a registered model.
-        """
-        model = self._registry.get_model(model_name)
+            """
+            Unload a registered model.
+            """
+            model = self._registry.get_model(model_name)
 
-        if model is None:
-            raise ValueError(f"Model '{model_name}' not found.")
+            if model is None:
+                raise ValueError(f"Model '{model_name}' not found.")
 
-        if model.is_loaded:
-            model.unload()
+            if model.is_loaded:
+                model.unload()
+            
+            if self._active_model == model:
+                self._active_model = None
 
     def get_model(self, model_name: str) -> Optional[BaseModel]:
         """
@@ -104,3 +121,22 @@ class ModelManager:
                 model.unload()
 
         self._registry.clear()
+    
+    @property
+    def active_model(self) -> Optional[BaseModel]:
+        """
+        Returns the currently active AI model.
+        """
+
+        return self._active_model
+
+    @property
+    def active_model_name(self) -> str:
+        """
+        Returns the active model name.
+        """
+
+        if self._active_model is None:
+            return "Not Loaded"
+
+        return self._active_model.model_name

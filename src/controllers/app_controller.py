@@ -355,6 +355,13 @@ class AppController:
         Display the processed frame.
         """
 
+        if self.latest_ai_result is not None:
+
+            frame = self._overlay_engine.render(
+                frame,
+                self.latest_ai_result,
+            )
+
         pixmap = FramePipeline.process(frame)
 
         if not self.ai_worker.is_busy:
@@ -556,20 +563,10 @@ class AppController:
 
         self.latest_ai_result = result
 
-        if self.current_frame is not None:
-
-            rendered_frame = self._overlay_engine.render(
-                self.current_frame,
-                result,
-            )
-
-            self.current_frame = rendered_frame
-
         print(
             f"AI Result Updated : "
-            f"{result['message']}"
+            f"{result.message}"
         )
-
 
     def _ai_error(self, message):
         """

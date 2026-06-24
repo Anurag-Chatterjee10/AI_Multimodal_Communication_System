@@ -5,7 +5,7 @@ Frame Processing Pipeline
 Processes camera frames before they are
 displayed in the GUI.
 """
-
+from src.ai.overlays.overlay_engine import OverlayEngine
 from src.processing.frame_converter import FrameConverter
 
 

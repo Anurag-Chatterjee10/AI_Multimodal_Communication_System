@@ -29,7 +29,7 @@ from src.ui.components.status_bar import AppStatusBar
 from src.ui.widgets.header_widget import HeaderWidget
 from src.ui.widgets.workspace import Workspace
 from src.ai.managers.model_manager import ModelManager
-from src.ai.models.dummy_model import DummyModel
+#from src.ai.models.dummy_model import DummyModel
 from src.ai.workers.ai_worker import AIWorker
 
 class MainWindow(QMainWindow):
@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
         Create reusable GUI components.
         """
 
-        self.menu_bar = AppMenuBar(self)
+        #self.menu_bar = AppMenuBar(self)
 
         self.tool_bar = AppToolBar(self)
 
@@ -103,16 +103,7 @@ class MainWindow(QMainWindow):
         # ------------------------------------------------------
         # AI Components
         # ------------------------------------------------------
-
         self.model_manager = ModelManager()
-
-        self.dummy_model = DummyModel()
-
-        self.model_manager.register_model(
-            self.dummy_model
-        )
-
-        self.model_manager.load_model("Dummy")
 
         self.ai_worker = AIWorker(
             self.model_manager
@@ -120,6 +111,11 @@ class MainWindow(QMainWindow):
 
         self.ai_worker.set_model("Dummy")
 
+        # GUI
+        self.menu_bar = AppMenuBar(
+            self.model_manager,
+            self,
+        )
     def _create_layout(self):
         """
         Assemble the application.

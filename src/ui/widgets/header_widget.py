@@ -71,3 +71,15 @@ class HeaderWidget(QWidget):
         self.title_label.setObjectName("headerTitle")
         self.subtitle_label.setObjectName("headerSubtitle")
         self.status_label.setObjectName("headerStatus")
+
+    def set_model_status(
+            self,
+            model_name: str,
+        ):
+            """
+            Update the currently loaded AI model.
+            """
+
+            self.status_label.setText(
+                f"● AI Model : {model_name}"
+            )
