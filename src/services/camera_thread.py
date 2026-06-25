@@ -166,7 +166,6 @@ class CameraThread(QThread):
         """
         Gracefully stop the camera thread.
         """
-
         if not self._running:
             return
 

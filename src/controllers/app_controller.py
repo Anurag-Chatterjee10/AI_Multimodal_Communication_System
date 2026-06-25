@@ -377,11 +377,12 @@ class AppController:
     # ==========================================================
     # Camera Status
     # ==========================================================
-
     def _camera_started(self):
         """
         Camera started successfully.
         """
+
+        self.current_media_source = "CAMERA"
 
         self.main_window.statusBar().showMessage(
             "Camera Started"
@@ -395,7 +396,6 @@ class AppController:
         """
         Camera stopped.
         """
-
         if self.recording_manager.is_recording:
             self.recording_manager.stop()
 
@@ -429,6 +429,11 @@ class AppController:
         """
         Update media FPS.
         """
+        camera_running = self.camera_service.is_running
+        video_running = self.video_service.is_running
+
+        if not camera_running and not video_running:
+            return
 
         self.main_window.statusBar().showMessage(
             f"FPS : {fps:.1f}"
@@ -438,11 +443,11 @@ class AppController:
 
             status = f"🔴 REC | FPS : {fps:.1f}"
 
-        elif self.current_media_source == "VIDEO":
+        elif video_running:
 
             status = f"▶ VIDEO | FPS : {fps:.1f}"
 
-        elif self.current_media_source == "CAMERA":
+        elif camera_running:
 
             status = f"🟢 LIVE | FPS : {fps:.1f}"
 

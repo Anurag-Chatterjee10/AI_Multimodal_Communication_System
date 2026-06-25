@@ -144,10 +144,10 @@ class CameraService(QObject):
             return
 
         logger.info("Stopping Camera")
+        thread = self._thread
 
-        self._thread.stop()
-
-        self._thread = None
+        if thread is not None:
+            thread.stop()
 
     def switch_camera(
         self,
@@ -200,7 +200,7 @@ class CameraService(QObject):
         )
 
         self._thread.camera_stopped.connect(
-            self.camera_stopped.emit
+            self._on_camera_stopped
         )
 
         self._thread.frame_ready.connect(
@@ -214,3 +214,12 @@ class CameraService(QObject):
         self._thread.camera_error.connect(
             self.camera_error.emit
         )
+    
+    def _on_camera_stopped(self):
+        """
+        Called after the camera thread has completely stopped.
+        """
+
+        self.camera_stopped.emit()
+
+        self._thread = None

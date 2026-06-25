@@ -15,7 +15,7 @@ from src.config import settings
 from src.config import constants
 
 from src.core.logger import logger
-
+from src.processing.frame_pipeline import FramePipeline
 from src.services.camera_service import CameraService
 from src.services.video.video_service import VideoService
 from src.controllers.app_controller import AppController
@@ -105,8 +105,16 @@ class MainWindow(QMainWindow):
         # ------------------------------------------------------
         self.model_manager = ModelManager()
 
+        self.model_manager.load_model("Dummy")
+
         self.ai_worker = AIWorker(
             self.model_manager
+        )
+
+        self.ai_worker.set_model("Dummy")
+
+        FramePipeline.set_ai_worker(
+            self.ai_worker
         )
 
         self.ai_worker.set_model("Dummy")

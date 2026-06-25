@@ -16,6 +16,7 @@ class FramePipeline:
 
     _latest_frame = None
     _recording_manager = None
+    _ai_worker = None
 
     @classmethod
     def set_recording_manager(cls, recording_manager):
@@ -24,6 +25,14 @@ class FramePipeline:
         """
 
         cls._recording_manager = recording_manager
+    
+    @classmethod
+    def set_ai_worker(cls, ai_worker):
+        """
+        Register the AIWorker used for future inference.
+        """
+
+        cls._ai_worker = ai_worker
 
     @classmethod
     def process(cls, frame):
@@ -39,6 +48,13 @@ class FramePipeline:
         ):
             cls._recording_manager.write(frame)
 
+        if (
+            cls._ai_worker is not None
+            and not cls._ai_worker.is_busy
+        ):
+            if cls._ai_worker.set_frame(frame.copy()):
+                cls._ai_worker.start()
+                
         return FrameConverter.to_qpixmap(frame)
 
     @classmethod
