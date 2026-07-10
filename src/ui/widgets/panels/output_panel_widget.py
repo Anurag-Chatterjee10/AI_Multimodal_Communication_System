@@ -67,3 +67,17 @@ class OutputPanelWidget(QFrame):
         self.title_label.setObjectName("outputTitle")
 
         self.output_area.setObjectName("outputArea")
+
+    def set_output(self, text: str) -> None:
+        """
+        Display AI output.
+        """
+
+        self.output_area.setPlainText(text)
+
+    def clear(self) -> None:
+        """
+        Clear the output panel.
+        """
+
+        self.output_area.clear()

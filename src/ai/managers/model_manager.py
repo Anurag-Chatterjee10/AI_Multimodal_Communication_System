@@ -1,27 +1,16 @@
 """
 Model Manager
 
-This module will manage the complete lifecycle of AI models.
-
-Future responsibilities:
-- Load models
-- Unload models
-- Track loaded models
-- Device selection
-- Memory management
-- Model metadata
-"""
-"""
-Model Manager
-
 Central manager responsible for controlling AI models.
 """
 
 from typing import List, Optional
-from src.ai.models.dummy_model import DummyModel
-from src.ai.models.yolo_model import YOLOModel
+
 from src.ai.managers.model_registry import ModelRegistry
 from src.ai.models.base_model import BaseModel
+from src.ai.models.dummy_model import DummyModel
+from src.ai.models.ocr_model import OCRModel
+from src.ai.models.yolo_model import YOLOModel
 
 
 class ModelManager:
@@ -35,7 +24,7 @@ class ModelManager:
         self._register_builtin_models()
 
         self._active_model: BaseModel | None = None
-    
+
     def _register_builtin_models(self) -> None:
         """
         Register all built-in AI models.
@@ -48,6 +37,11 @@ class ModelManager:
         self.register_model(
             YOLOModel()
         )
+
+        self.register_model(
+            OCRModel()
+        )
+
     def register_model(self, model: BaseModel) -> None:
         """
         Register an AI model.
@@ -61,32 +55,33 @@ class ModelManager:
         self._registry.unregister_model(model_name)
 
     def load_model(self, model_name: str) -> None:
-            """
-            Load a registered model.
-            """
-            model = self._registry.get_model(model_name)
+        """
+        Load a registered model.
+        """
+        model = self._registry.get_model(model_name)
 
-            if model is None:
-                raise ValueError(f"Model '{model_name}' not found.")
+        if model is None:
+            raise ValueError(f"Model '{model_name}' not found.")
 
-            if not model.is_loaded:
-                model.load()
+        if not model.is_loaded:
+            model.load()
 
-            self._active_model = model
+        self._active_model = model
+
     def unload_model(self, model_name: str) -> None:
-            """
-            Unload a registered model.
-            """
-            model = self._registry.get_model(model_name)
+        """
+        Unload a registered model.
+        """
+        model = self._registry.get_model(model_name)
 
-            if model is None:
-                raise ValueError(f"Model '{model_name}' not found.")
+        if model is None:
+            raise ValueError(f"Model '{model_name}' not found.")
 
-            if model.is_loaded:
-                model.unload()
-            
-            if self._active_model == model:
-                self._active_model = None
+        if model.is_loaded:
+            model.unload()
+
+        if self._active_model == model:
+            self._active_model = None
 
     def get_model(self, model_name: str) -> Optional[BaseModel]:
         """
@@ -125,13 +120,12 @@ class ModelManager:
                 model.unload()
 
         self._registry.clear()
-    
+
     @property
     def active_model(self) -> Optional[BaseModel]:
         """
         Returns the currently active AI model.
         """
-
         return self._active_model
 
     @property
@@ -139,7 +133,6 @@ class ModelManager:
         """
         Returns the active model name.
         """
-
         if self._active_model is None:
             return "Not Loaded"
 

@@ -87,20 +87,43 @@ class OverlayEngine:
                 2,
             )
 
-    def _draw_ocr(self, frame, result):
+    def _draw_ocr(
+        self,
+        frame: np.ndarray,
+        result: OCRResult,
+    ) -> None:
+        """
+        Draw OCR detections.
+
+        EasyOCR returns bounding boxes as four corner points.
+        """
 
         for region in result.text_regions:
 
             text = region["text"]
             confidence = region["confidence"]
-            x1, y1, x2, y2 = region["bbox"]
+            bbox = region["bbox"]
 
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            points = np.array(
+                bbox,
+                dtype=np.int32,
+            )
+
+            cv2.polylines(
+                frame,
+                [points],
+                True,
+                (255, 0, 0),
+                2,
+            )
+
+            x = int(points[0][0])
+            y = int(points[0][1])
 
             cv2.putText(
                 frame,
-                f"{text} {confidence:.2f}",
-                (x1, max(y1 - 10, 20)),
+                f"{text} ({confidence:.2f})",
+                (x, max(y - 10, 20)),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
                 (255, 0, 0),

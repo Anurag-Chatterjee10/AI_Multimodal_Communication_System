@@ -52,7 +52,7 @@ class OCRResult(BaseResult):
         """
         Returns all detected text as a single string.
         """
-        return " ".join(
+        return "\n".join(
             region["text"] for region in self._text_regions
         )
 
@@ -60,10 +60,19 @@ class OCRResult(BaseResult):
         self,
         text: str,
         confidence: float,
-        bbox: list[int],
+        bbox: list[list[float]],
     ) -> None:
         """
         Adds a detected text region.
+
+        bbox format:
+
+        [
+            [x1, y1],
+            [x2, y2],
+            [x3, y3],
+            [x4, y4]
+        ]
         """
 
         self._text_regions.append(

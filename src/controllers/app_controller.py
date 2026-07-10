@@ -575,7 +575,13 @@ class AppController:
         """
 
         self.latest_ai_result = result
-        
+
+        if hasattr(result, "full_text"):
+
+            self.main_window.workspace.output_panel.set_output(
+                result.full_text
+            )
+
     def _ai_error(self, message):
         """
         AI inference error.
