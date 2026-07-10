@@ -17,6 +17,7 @@ from src.services.snapshot_manager import SnapshotManager
 from src.services.recording.recording_manager import RecordingManager
 from PySide6.QtWidgets import QFileDialog
 from src.config import settings
+from src.audio.audio_buffer import AudioBuffer
 class AppController:
     """
     Coordinates communication between the UI
@@ -28,6 +29,7 @@ class AppController:
         main_window,
         camera_service,
         video_service,
+        microphone_service,
         model_manager,
         ai_worker,
     ):
@@ -41,6 +43,8 @@ class AppController:
 
         self.video_service = video_service
 
+        self.microphone_service = microphone_service
+
         self.model_manager = model_manager
 
         self.ai_worker = ai_worker
@@ -52,6 +56,8 @@ class AppController:
         self.latest_ai_result = None
 
         self._overlay_engine = OverlayEngine()
+
+        self._audio_buffer = AudioBuffer()
         
         self._frame_counter = 0
         
@@ -100,6 +106,10 @@ class AppController:
 
         self.main_window.menu_bar.open_video_action.triggered.connect(
             self._open_video
+        )
+
+        self.main_window.tool_bar.microphone_action.triggered.connect(
+            self._toggle_microphone
         )
         # ------------------------------------------------------
         # Recording Signals
@@ -159,6 +169,26 @@ class AppController:
 
         self.video_service.fps_updated.connect(
             self._update_fps
+        )
+
+        # ------------------------------------------------------
+        # Microphone Service Signals
+        # ------------------------------------------------------
+
+        self.microphone_service.microphone_started.connect(
+            self._microphone_started
+        )
+
+        self.microphone_service.microphone_stopped.connect(
+            self._microphone_stopped
+        )
+
+        self.microphone_service.microphone_error.connect(
+            self._microphone_error
+        )
+
+        self.microphone_service.audio_ready.connect(
+            self._audio_ready
         )
 
         # ------------------------------------------------------
@@ -366,18 +396,6 @@ class AppController:
 
         pixmap = FramePipeline.process(frame)
 
-        self._frame_counter += 1
-
-        if self._frame_counter >= settings.AI_INFERENCE_INTERVAL:
-
-            self._frame_counter = 0
-
-            if not self.ai_worker.is_busy:
-
-                if self.ai_worker.set_frame(frame):
-
-                    self.ai_worker.start()
-
         self.main_window.workspace.camera_panel.set_frame(
             pixmap
         )
@@ -580,6 +598,12 @@ class AppController:
 
             self.main_window.workspace.output_panel.set_output(
                 result.full_text
+            )   
+        
+        elif hasattr(result, "transcript"):
+
+            self.main_window.workspace.output_panel.set_output(
+                result.transcript
             )
 
     def _ai_error(self, message):
@@ -591,6 +615,94 @@ class AppController:
 
         print(
             f"AI Error : {message}"
+        )
+
+    # ==========================================================
+    # Microphone Status
+    # ==========================================================
+
+    def _microphone_started(self):
+        """
+        Microphone started successfully.
+        """
+
+        self.current_media_source = "MICROPHONE"
+
+        self.main_window.statusBar().showMessage(
+            "Microphone Started"
+        )
+
+
+    def _microphone_stopped(self):
+        """
+        Microphone stopped.
+        """
+
+        self.current_media_source = "NONE"
+
+        self.main_window.statusBar().showMessage(
+            "Microphone Stopped"
+        )
+
+
+    def _microphone_error(self, message):
+        """
+        Handle microphone errors.
+        """
+
+        self.main_window.statusBar().showMessage(
+            message
+        )
+
+
+    def _audio_ready(self, audio):
+        """
+        Process microphone audio.
+        """
+
+        active_model = self.model_manager.active_model
+
+        if active_model is None:
+            return
+
+        if active_model.model_name != "Speech":
+            return
+
+        self._audio_buffer.append(audio)
+
+        if not self._audio_buffer.is_ready():
+            return
+
+        if self.ai_worker.is_busy:
+            return
+
+        buffered_audio = self._audio_buffer.get_audio()
+
+        if self.ai_worker.set_input(buffered_audio):
+
+            self.ai_worker.start()
+
+            self._audio_buffer.clear()
+    
+    def _toggle_microphone(self):
+        """
+        Start or stop microphone capture.
+        """
+
+        if self.microphone_service.is_running:
+
+            self.microphone_service.stop()
+
+            self.main_window.statusBar().showMessage(
+                "Microphone Stopped"
+            )
+
+            return
+
+        self.microphone_service.start()
+
+        self.main_window.statusBar().showMessage(
+            "Microphone Started"
         )
 
     @property

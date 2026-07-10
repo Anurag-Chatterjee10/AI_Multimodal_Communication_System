@@ -13,10 +13,11 @@ from PySide6.QtWidgets import (
 
 from src.config import settings
 from src.config import constants
-
+from src.services.microphone_service import MicrophoneService
 from src.core.logger import logger
 from src.processing.frame_pipeline import FramePipeline
 from src.services.camera_service import CameraService
+from src.services.microphone_service import MicrophoneService
 from src.services.video.video_service import VideoService
 from src.controllers.app_controller import AppController
 
@@ -52,6 +53,7 @@ class MainWindow(QMainWindow):
             self,
             self.camera_service,
             self.video_service,
+            self.microphone_service,
             self.model_manager,
             self.ai_worker,
         )
@@ -99,6 +101,8 @@ class MainWindow(QMainWindow):
         self.camera_service = CameraService()
 
         self.video_service = VideoService()
+
+        self.microphone_service = MicrophoneService()
 
         # ------------------------------------------------------
         # AI Components
@@ -168,6 +172,8 @@ class MainWindow(QMainWindow):
         self.camera_service.stop()
 
         self.video_service.stop()
+
+        self.microphone_service.stop()
 
         self.ai_worker.stop()
 

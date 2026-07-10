@@ -70,13 +70,28 @@ class AIWorker(QThread):
 
         self._model_manager = model_manager
 
-        self._frame = None
+        self._input_data = None
 
         self._model_name = None
 
         self._running = False
 
         self._busy = False
+    
+    def set_input(self, data: Any) -> bool:
+        """
+        Supply generic input for inference.
+
+        Returns True if accepted.
+        Returns False if the worker is busy.
+        """
+
+        if self._busy:
+            return False
+
+        self._input_data = data
+
+        return True
 
     @property
     def is_busy(self) -> bool:
@@ -87,19 +102,11 @@ class AIWorker(QThread):
 
     def set_frame(self, frame: Any) -> bool:
         """
-        Supply a frame for inference.
-
-        Returns True if accepted.
-        Returns False if worker is busy.
+        Backward-compatible wrapper for vision models.
         """
 
-        if self._busy:
-            return False
-
-        self._frame = frame
-
-        return True
-
+        return self.set_input(frame)
+    
     def set_model(self, model_name: str) -> None:
         """
         Select the AI model.
@@ -124,7 +131,7 @@ class AIWorker(QThread):
 
         try:
 
-            result = self._process_frame()
+            result = self._process_input()
 
             self.inference_finished.emit(result)
 
@@ -138,10 +145,10 @@ class AIWorker(QThread):
 
             self._running = False
 
-    def _process_frame(self):
+    def _process_input(self):
 
-        if self._frame is None:
-            raise ValueError("No frame supplied.")
+        if self._input_data is None:
+            raise ValueError("No inference input supplied.")
 
         if self._model_name is None:
             raise ValueError("No AI model selected.")
@@ -158,4 +165,4 @@ class AIWorker(QThread):
                 f"Model '{self._model_name}' is not loaded."
             )
 
-        return model.infer(self._frame)
+        return model.infer(self._input_data)

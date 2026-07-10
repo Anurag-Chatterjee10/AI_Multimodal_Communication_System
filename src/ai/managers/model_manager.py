@@ -11,7 +11,7 @@ from src.ai.models.base_model import BaseModel
 from src.ai.models.dummy_model import DummyModel
 from src.ai.models.ocr_model import OCRModel
 from src.ai.models.yolo_model import YOLOModel
-
+from src.ai.models.speech_model import SpeechModel
 
 class ModelManager:
     """
@@ -40,6 +40,10 @@ class ModelManager:
 
         self.register_model(
             OCRModel()
+        )
+
+        self.register_model(
+            SpeechModel()
         )
 
     def register_model(self, model: BaseModel) -> None:

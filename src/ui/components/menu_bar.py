@@ -21,6 +21,7 @@ class AppMenuBar(QMenuBar):
         parent=None,
     ):
         super().__init__(parent)
+
         self._model_manager = model_manager
 
         self._model_actions = {}
