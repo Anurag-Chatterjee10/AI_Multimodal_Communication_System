@@ -103,21 +103,28 @@ class MainWindow(QMainWindow):
         # ------------------------------------------------------
         # AI Components
         # ------------------------------------------------------
+
         self.model_manager = ModelManager()
 
-        self.model_manager.load_model("Dummy")
+        self.model_manager.load_model(
+            settings.AI_DEFAULT_MODEL
+        )
 
         self.ai_worker = AIWorker(
             self.model_manager
         )
 
-        self.ai_worker.set_model("Dummy")
+        self.ai_worker.set_model(
+            settings.AI_DEFAULT_MODEL
+        )
+
+        self.header.set_model_status(
+            settings.AI_DEFAULT_MODEL
+        )
 
         FramePipeline.set_ai_worker(
             self.ai_worker
         )
-
-        self.ai_worker.set_model("Dummy")
 
         # GUI
         self.menu_bar = AppMenuBar(

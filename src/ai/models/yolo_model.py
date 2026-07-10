@@ -11,7 +11,7 @@ from ultralytics import YOLO
 
 from src.ai.models.base_model import BaseModel
 from src.ai.results.detection_result import DetectionResult
-
+from src.config import settings
 
 class YOLOModel(BaseModel):
     """
@@ -94,6 +94,9 @@ class YOLOModel(BaseModel):
             confidence = float(box.conf.item())
 
             x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
+
+            if confidence < settings.AI_CONFIDENCE_THRESHOLD:
+                continue
 
             result.add_detection(
                 label=label,

@@ -41,3 +41,9 @@ DATASET_FOLDER = "datasets"
 # =====================================================
 
 DEBUG = True
+
+AI_DEFAULT_MODEL = "Dummy"
+
+AI_CONFIDENCE_THRESHOLD = 0.50
+
+AI_INFERENCE_INTERVAL = 3

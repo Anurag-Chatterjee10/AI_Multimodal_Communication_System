@@ -16,7 +16,7 @@ from src.processing.frame_pipeline import FramePipeline
 from src.services.snapshot_manager import SnapshotManager
 from src.services.recording.recording_manager import RecordingManager
 from PySide6.QtWidgets import QFileDialog
-
+from src.config import settings
 class AppController:
     """
     Coordinates communication between the UI
@@ -52,7 +52,9 @@ class AppController:
         self.latest_ai_result = None
 
         self._overlay_engine = OverlayEngine()
-
+        
+        self._frame_counter = 0
+        
         FramePipeline.set_recording_manager(
             self.recording_manager
         )
@@ -364,11 +366,17 @@ class AppController:
 
         pixmap = FramePipeline.process(frame)
 
-        if not self.ai_worker.is_busy:
+        self._frame_counter += 1
 
-            if self.ai_worker.set_frame(frame):
+        if self._frame_counter >= settings.AI_INFERENCE_INTERVAL:
 
-                self.ai_worker.start()
+            self._frame_counter = 0
+
+            if not self.ai_worker.is_busy:
+
+                if self.ai_worker.set_frame(frame):
+
+                    self.ai_worker.start()
 
         self.main_window.workspace.camera_panel.set_frame(
             pixmap
@@ -567,12 +575,7 @@ class AppController:
         """
 
         self.latest_ai_result = result
-
-        print(
-            f"AI Result Updated : "
-            f"{result.message}"
-        )
-
+        
     def _ai_error(self, message):
         """
         AI inference error.
