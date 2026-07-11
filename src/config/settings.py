@@ -49,3 +49,9 @@ AI_CONFIDENCE_THRESHOLD = 0.50
 OCR_CONFIDENCE_THRESHOLD = 0.50
 
 AI_INFERENCE_INTERVAL = 3
+
+# ==========================================================
+# Face Recognition
+# ==========================================================
+
+FACE_RECOGNITION_THRESHOLD = 0.55

@@ -9,9 +9,11 @@ from typing import List, Optional
 from src.ai.managers.model_registry import ModelRegistry
 from src.ai.models.base_model import BaseModel
 from src.ai.models.dummy_model import DummyModel
+from src.ai.models.face_model import FaceModel
 from src.ai.models.ocr_model import OCRModel
-from src.ai.models.yolo_model import YOLOModel
 from src.ai.models.speech_model import SpeechModel
+from src.ai.models.yolo_model import YOLOModel
+
 
 class ModelManager:
     """
@@ -44,6 +46,10 @@ class ModelManager:
 
         self.register_model(
             SpeechModel()
+        )
+
+        self.register_model(
+            FaceModel()
         )
 
     def register_model(self, model: BaseModel) -> None:

@@ -130,23 +130,63 @@ class OverlayEngine:
                 2,
             )
 
-    def _draw_face(self, frame, result):
+    def _draw_face(
+        self,
+        frame: np.ndarray,
+        result: FaceResult,
+    ) -> None:
+        """
+        Draw recognized faces.
+        """
 
         for face in result.faces:
 
             identity = face["identity"]
             confidence = face["confidence"]
-            x1, y1, x2, y2 = face["bbox"]
 
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 2)
+            x1, y1, x2, y2 = map(
+                int,
+                face["bbox"],
+            )
+
+            if identity is None:
+                identity = "Unknown"
+
+            cv2.rectangle(
+                frame,
+                (x1, y1),
+                (x2, y2),
+                (0, 255, 255),
+                2,
+            )
+
+            label = (
+                f"{identity} "
+                f"{confidence:.2f}"
+            )
+
+            (width, height), _ = cv2.getTextSize(
+                label,
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                2,
+            )
+
+            cv2.rectangle(
+                frame,
+                (x1, y1 - height - 12),
+                (x1 + width + 8, y1),
+                (0, 255, 255),
+                -1,
+            )
 
             cv2.putText(
                 frame,
-                f"{identity} {confidence:.2f}",
-                (x1, max(y1 - 10, 20)),
+                label,
+                (x1 + 4, y1 - 6),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
-                (0, 255, 255),
+                (0, 0, 0),
                 2,
             )
 
