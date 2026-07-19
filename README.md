@@ -54,9 +54,11 @@ Designed for extensibility, maintainability, and real-world deployment
 
 
 
+## 🏗️ System Architecture
 
-                                **AI MULTIMODAL COMMUNICATION SYSTEM**
-                                           **SYSTEM ARCHITECTURE**
+```text
+                                AI MULTIMODAL COMMUNICATION SYSTEM
+                                           SYSTEM ARCHITECTURE
 
                                               +----------------------+
                                               |      User Input      |
@@ -159,7 +161,7 @@ Designed for extensibility, maintainability, and real-world deployment
                                          | Sign Animation Display         |
                                          | Status & Logs                 |
                                          +--------------------------------+
-
+```
 
 **Project Development Phases**
 
