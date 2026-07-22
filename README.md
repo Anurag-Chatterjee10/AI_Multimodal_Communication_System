@@ -54,7 +54,7 @@ Designed for extensibility, maintainability, and real-world deployment
 
 
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```text
                                 AI MULTIMODAL COMMUNICATION SYSTEM
